@@ -6,12 +6,14 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import com.chatnoir.R
 
 class GameView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : View(context, attrs) {
 
+    private val catDrawable = context.getDrawable(R.drawable.cat1)
     private var _board: Board? = null
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
@@ -35,16 +37,32 @@ class GameView @JvmOverloads constructor(
         for (r in 0 until size) {
             for (c in 0 until size) {
                 val cell = board.grid[r][c]
-                paint.color = when (cell.type) {
-                    CellType.EMPTY -> 0xFFEFEFEF.toInt()
-                    CellType.FENCE -> 0xFF4A4A4A.toInt()
-                    CellType.CAT   -> 0xFF000000.toInt()
-                }
                 val left = offX + c * cellSize
                 val top = offY + r * cellSize
-                canvas.drawRect(left, top, left + cellSize - 2f, top + cellSize - 2f, paint)
+                val right = left + cellSize - 2f
+                val bottom = top + cellSize - 2f
+
+                when (cell.type) {
+                    CellType.EMPTY -> {
+                        paint.color = 0xFFD7D5E1.toInt()
+                        canvas.drawRect(left, top, right, bottom, paint)
+                    }
+                    CellType.FENCE -> {
+                        paint.color = 0xFF625b71.toInt()
+                        canvas.drawRect(left, top, right, bottom, paint)
+                    }
+                    CellType.CAT -> {
+                        catDrawable?.setBounds(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+                        catDrawable?.draw(canvas)
+                    }
+                }
             }
         }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        postInvalidateOnAnimation()
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
