@@ -1,0 +1,14 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/cat">
+
+    <!-- Piscar: anima scaleY do grupo dos olhos -->
+<!--    <target-->
+<!--        android:name="eyes_group"-->
+<!--        android:animation="@animator/cat_eyes_blink_anim" />-->
+
+    <!-- Cauda: gira levemente de um lado para o outro -->
+    <target
+        android:name="tail_group"
+        android:animation="@animator/cat_tail_swing_anim" />
+
+</animated-vector>

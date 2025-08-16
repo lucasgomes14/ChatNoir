@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Chat Noir</string>
+    <string name="new_game">Novo Jogo</string>
+    <string name="user_score">Cerca: %1$d</string>
+    <string name="cat_score">Gato: %1$d</string>
+    <string name="game_over">Fim de jogo</string>
+    <string name="cat_won">Gato venceu!</string>
+    <string name="user_won">Cerca venceu!</string>
+</resources>
