@@ -3,6 +3,10 @@ package com.chatnoir.game
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.media.AudioAttributes
+import android.media.AudioManager
+import android.media.SoundPool
+import android.os.Build
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -13,9 +17,34 @@ class GameView @JvmOverloads constructor(
     attrs: AttributeSet? = null
 ) : View(context, attrs) {
 
+    private var soundPool: SoundPool? = null
+    private var fenceSoundId: Int = 0
+    private var victorySoundId: Int = 0
+    private var defeatSoundId: Int = 0
     private val catDrawable = context.getDrawable(R.drawable.cat1)
     private var _board: Board? = null
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    init {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val attrs = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            soundPool = SoundPool.Builder()
+                .setAudioAttributes(attrs)
+                .setMaxStreams(5)
+                .build()
+        } else {
+            @Suppress("DEPRECATION")
+            soundPool = SoundPool(5, AudioManager.STREAM_MUSIC, 0)
+        }
+
+        // carrega o som da cerca
+        fenceSoundId = soundPool!!.load(context, R.raw.fencesound, 1)
+        victorySoundId = soundPool!!.load(context, R.raw.victory, 1)
+        defeatSoundId = soundPool!!.load(context, R.raw.defeat, 1)
+    }
 
     var onGameEnd: ((Winner) -> Unit)? = null
 
@@ -81,11 +110,18 @@ class GameView @JvmOverloads constructor(
                 if (clicked.type == CellType.EMPTY) {
                     // Usuário coloca cerca
                     if (board.placeFence(row, col)) {
+                        soundPool?.play(fenceSoundId, 1f, 1f, 1, 0, 1f)
                         invalidate()
                         // Turno do gato (IA A*)
                         when (GameLogic.performCatMove(board)) {
-                            GameLogic.MoveResult.CAT_WON -> onGameEnd?.invoke(Winner.CAT)
-                            GameLogic.MoveResult.USER_WON -> onGameEnd?.invoke(Winner.USER)
+                            GameLogic.MoveResult.CAT_WON -> {
+                                soundPool?.play(defeatSoundId, 1f, 1f, 1, 0, 1f)
+                                onGameEnd?.invoke(Winner.CAT)
+                            }
+                            GameLogic.MoveResult.USER_WON -> {
+                                soundPool?.play(victorySoundId, 1f, 1f, 1, 0, 1f)
+                                onGameEnd?.invoke(Winner.USER)
+                            }
                             GameLogic.MoveResult.MOVED -> invalidate()
                         }
                     }
@@ -93,5 +129,11 @@ class GameView @JvmOverloads constructor(
             }
         }
         return true
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        soundPool?.release()
+        soundPool = null
     }
 }
